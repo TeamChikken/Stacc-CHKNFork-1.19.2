@@ -6,6 +6,7 @@ import java.util.Locale;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -18,15 +19,13 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-
 /**
  * fixes ItemStack to serialize count as int instead of byte
  */
 @Mixin (ItemStack.class)
 public abstract class SerializationFixin {
-	@Environment (EnvType.CLIENT) private static final NumberFormat FORMAT = NumberFormat.getNumberInstance(Locale.US);
+	@Unique
+	private static final NumberFormat FORMAT = NumberFormat.getNumberInstance(Locale.US);
 	@Shadow private int count;
 
 	@Inject (at = @At ("TAIL"), method = "<init>(Lnet/minecraft/nbt/NbtCompound;)V")
@@ -45,7 +44,6 @@ public abstract class SerializationFixin {
 		}
 	}
 
-	@Environment (EnvType.CLIENT)
 	@Inject (method = "getTooltip", at = @At ("RETURN"), cancellable = true)
 	private void addOverflowTooltip(PlayerEntity player, TooltipContext context, CallbackInfoReturnable<List<Text>> cir) {
 		if (this.getCount() > 1000) {
